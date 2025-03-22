@@ -1,0 +1,6 @@
+@Mission_11_Penner_HostAddress = http://localhost:5199
+
+GET {{Mission_11_Penner_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
