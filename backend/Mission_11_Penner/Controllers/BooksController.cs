@@ -1,11 +1,11 @@
 // Controllers/BooksController.cs
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Mission_11_Penner.Models; // Replace with your actual namespace
+using System.Linq;
+using System.Threading.Tasks;
+using Mission_11_Penner.Models;
 
-namespace YourNamespace.Controllers // Replace with your actual namespace
+namespace Mission_11_Penner.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,14 +20,21 @@ namespace YourNamespace.Controllers // Replace with your actual namespace
 
         // GET: api/Books
         [HttpGet]
-        public async Task<ActionResult<BooksResponse>> GetBooks(
+        public async Task<ActionResult<object>> GetBooks(
             int pageNumber = 1,
             int pageSize = 5,
             string sortField = "Title",
-            string sortDirection = "asc")
+            string sortDirection = "asc",
+            string category = "")
         {
-            // Create a query that can be sorted
+            // Create a query that can be filtered and sorted
             var query = _context.Books.AsQueryable();
+
+            // Apply category filter if provided
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(b => b.Category == category);
+            }
 
             // Apply sorting
             switch (sortField.ToLower())
@@ -61,7 +68,7 @@ namespace YourNamespace.Controllers // Replace with your actual namespace
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new BooksResponse
+            return new
             {
                 Books = books,
                 TotalBooks = totalItems,
@@ -69,13 +76,17 @@ namespace YourNamespace.Controllers // Replace with your actual namespace
                 PageSize = pageSize
             };
         }
-    }
 
-    public class BooksResponse
-    {
-        public List<Book> Books { get; set; }
-        public int TotalBooks { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        // GET: api/Books/categories
+        [HttpGet("categories")]
+        public async Task<ActionResult<List<string>>> GetCategories()
+        {
+            var categories = await _context.Books
+                .Select(b => b.Category)
+                .Distinct()
+                .ToListAsync();
+
+            return categories;
+        }
     }
 }
