@@ -1,49 +1,53 @@
 // src/pages/AdminBooks.tsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Book } from '../types';
+import { bookApi } from '../api/bookApi';
+
+interface Book {
+  bookID: number;
+  title: string;
+  author: string;
+  category: string;
+  price: number;
+}
 
 const AdminBooks: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBooks();
   }, []);
 
-  const fetchBooks = async () => {
+  // src/pages/AdminBooks.tsx
+const fetchBooks = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('https://localhost:7040/api/Admin/Books');
-      if (!response.ok) {
-        throw new Error('Failed to fetch books');
-      }
-      const data = await response.json();
-      setBooks(data);
-    } catch (error) {
-      console.error('Error fetching books:', error);
+      const data = await bookApi.getBooks(true); // Pass true to indicate this is for admin
+      // Adapt to your API response structure
+      const booksData = data.books || data;
+      setBooks(booksData);
+    } catch (err) {
+      console.error('Error fetching books:', err);
+      setError('Failed to load books. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteBook = async (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this book?')) {
       return;
     }
 
     try {
-      const response = await fetch(`https://localhost:7040/api/Admin/Books/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete book');
-      }
-
-      // Update the books list after deletion
+      await bookApi.deleteBook(id);
+      // Update the UI after successful deletion
       setBooks(books.filter(book => book.bookID !== id));
-    } catch (error) {
-      console.error('Error deleting book:', error);
+    } catch (err) {
+      console.error('Error deleting book:', err);
+      alert('Failed to delete book. Please try again later.');
     }
   };
 
@@ -55,6 +59,12 @@ const AdminBooks: React.FC = () => {
           Add New Book
         </Link>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <div className="d-flex justify-content-center">
@@ -76,28 +86,34 @@ const AdminBooks: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {books.map(book => (
-                <tr key={book.bookID}>
-                  <td>{book.bookID}</td>
-                  <td>{book.title}</td>
-                  <td>{book.author}</td>
-                  <td>{book.category}</td>
-                  <td>${book.price.toFixed(2)}</td>
-                  <td>
-                    <div className="btn-group" role="group">
-                      <Link to={`/admin/books/edit/${book.bookID}`} className="btn btn-sm btn-primary me-1">
-                        Edit
-                      </Link>
-                      <button 
-                        className="btn btn-sm btn-danger"
-                        onClick={() => deleteBook(book.bookID)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+              {books.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center">No books found</td>
                 </tr>
-              ))}
+              ) : (
+                books.map(book => (
+                  <tr key={book.bookID}>
+                    <td>{book.bookID}</td>
+                    <td>{book.title}</td>
+                    <td>{book.author}</td>
+                    <td>{book.category}</td>
+                    <td>${book.price.toFixed(2)}</td>
+                    <td>
+                      <div className="btn-group" role="group">
+                        <Link to={`/admin/books/edit/${book.bookID}`} className="btn btn-sm btn-primary me-1">
+                          Edit
+                        </Link>
+                        <button 
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleDelete(book.bookID)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

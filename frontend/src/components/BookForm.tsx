@@ -1,7 +1,9 @@
 // src/components/BookForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Book } from '../types';
+import { bookApi } from '../api/bookApi';
+import { Book } from '../types/index';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 interface BookFormProps {
   isEdit?: boolean;
@@ -42,12 +44,10 @@ const BookForm: React.FC<BookFormProps> = ({ isEdit = false }) => {
   
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://localhost:7040/api/Books/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      const data = await response.json();
+      const data = await bookApi.getCategories();
       setCategories(data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
       setError('Failed to load categories. Please try again later.');
     }
   };
@@ -55,12 +55,10 @@ const BookForm: React.FC<BookFormProps> = ({ isEdit = false }) => {
   const fetchBook = async (bookId: number) => {
     setLoading(true);
     try {
-      const response = await fetch(`https://localhost:7040/api/Admin/Books/${bookId}`);
-      if (!response.ok) throw new Error('Failed to fetch book');
-      const data = await response.json();
+      const data = await bookApi.getBook(bookId);
       setBook(data);
-    } catch (error) {
-      console.error('Error fetching book:', error);
+    } catch (err) {
+      console.error('Error fetching book:', err);
       setError('Failed to load book data. Please try again later.');
     } finally {
       setLoading(false);
@@ -90,26 +88,16 @@ const BookForm: React.FC<BookFormProps> = ({ isEdit = false }) => {
     setError(null);
     
     try {
-      const url = isEdit 
-        ? `https://localhost:7040/api/Admin/Books/${book.bookID}`
-        : 'https://localhost:7040/api/Admin/Books';
-      
-      const method = isEdit ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(book)
-      });
-      
-      if (!response.ok) throw new Error('Failed to save book');
+      if (isEdit) {
+        await bookApi.updateBook(book.bookID, book);
+      } else {
+        await bookApi.createBook(book);
+      }
       
       // Navigate back to admin books page
       navigate('/admin/books');
-    } catch (error) {
-      console.error('Error saving book:', error);
+    } catch (err) {
+      console.error('Error saving book:', err);
       setError('Failed to save book. Please try again later.');
     } finally {
       setLoading(false);
@@ -225,32 +213,18 @@ const BookForm: React.FC<BookFormProps> = ({ isEdit = false }) => {
                 required
               >
                 <option value="">Select Category</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-                <option value="new">Add New Category...</option>
+                {categories.length > 0 ? (
+                  categories.map(category => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>Loading categories...</option>
+                )}
               </select>
             </div>
           </div>
-          
-          {book.category === 'new' && (
-            <div className="col-md-12">
-              <div className="form-group mb-3">
-                <label htmlFor="newCategory">New Category</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="newCategory"
-                  name="category"
-                  value=""
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-          )}
           
           <div className="col-md-6">
             <div className="form-group mb-3">
