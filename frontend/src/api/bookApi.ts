@@ -1,5 +1,5 @@
 // src/api/bookApi.ts
-const API_URL = 'https://localhost:7040/api';
+const API_URL = 'https://mission13backendpenner-a4huade9cwavfufa.eastus-01.azurewebsites.net/api';
 
 export const bookApi = {
   // Get all books
