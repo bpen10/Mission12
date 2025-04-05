@@ -23,40 +23,20 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       return;
     }
   
-    // Log all properties to see the actual structure
-    console.log("Book properties:", Object.keys(book));
-    
-    // Find the correct ID property name, whatever it is
-    const bookId = book.bookID || book.bookId || book.BookID || book.id || book.ID;
-    console.log("Found book ID:", bookId);
-  
     setCartItems(prevItems => {
-      console.log("Current cart before update:", JSON.stringify(prevItems));
-      
-      // Find if this book already exists in the cart
-      const existingItemIndex = prevItems.findIndex(item => {
-        // Get the ID property from the item in the cart
-        const itemId = item.book.bookID || item.book.bookId || item.book.BookID || item.book.id || item.book.ID;
-        console.log("Comparing cart item ID:", itemId, "with new book ID:", bookId);
-        return itemId === bookId;
-      });
-      
-      console.log("Existing item index:", existingItemIndex);
+      const existingItemIndex = prevItems.findIndex(item => 
+        item.book.bookID === book.bookID
+      );
       
       if (existingItemIndex >= 0) {
-        // Create a new array with the updated quantity
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
           quantity: updatedItems[existingItemIndex].quantity + 1
         };
-        console.log("Updated cart:", JSON.stringify(updatedItems));
         return updatedItems;
       } else {
-        // Add as a new item
-        const newItems = [...prevItems, { book, quantity: 1 }];
-        console.log("New cart with added item:", JSON.stringify(newItems));
-        return newItems;
+        return [...prevItems, { book, quantity: 1 }];
       }
     });
   };

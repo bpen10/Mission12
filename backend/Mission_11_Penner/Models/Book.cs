@@ -5,7 +5,7 @@ namespace Mission_11_Penner.Models;
 
 public partial class Book
 {
-    public int BookId { get; set; }
+    public int bookID { get; set; }
 
     public string Title { get; set; } = null!;
 

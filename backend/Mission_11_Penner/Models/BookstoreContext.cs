@@ -25,9 +25,9 @@ public partial class BookstoreContext : DbContext
     {
         modelBuilder.Entity<Book>(entity =>
         {
-            entity.HasIndex(e => e.BookId, "IX_Books_BookID").IsUnique();
+            entity.HasIndex(e => e.bookID, "IX_Books_BookID").IsUnique();
 
-            entity.Property(e => e.BookId).HasColumnName("BookID");
+            entity.Property(e => e.bookID).HasColumnName("BookID");
             entity.Property(e => e.Isbn).HasColumnName("ISBN");
         });
 
