@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import CategoryFilter from './CategoryFilter';
 import CartSummary from './CartSummary';
 
-const ProjectList: React.FC = () => {
+const BookList: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -227,4 +227,4 @@ const ProjectList: React.FC = () => {
   );
 };
 
-export default ProjectList;
+export default BookList;

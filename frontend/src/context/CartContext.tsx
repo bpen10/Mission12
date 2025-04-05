@@ -16,17 +16,47 @@ export const CartProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const addToCart = (book: Book) => {
+    console.log("Adding book to cart:", book);
+    
+    if (!book) {
+      console.error("Attempted to add invalid book to cart:", book);
+      return;
+    }
+  
+    // Log all properties to see the actual structure
+    console.log("Book properties:", Object.keys(book));
+    
+    // Find the correct ID property name, whatever it is
+    const bookId = book.bookID || book.bookId || book.BookID || book.id || book.ID;
+    console.log("Found book ID:", bookId);
+  
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.book.bookID === book.bookID);
+      console.log("Current cart before update:", JSON.stringify(prevItems));
       
-      if (existingItem) {
-        return prevItems.map(item => 
-          item.book.bookID === book.bookID 
-            ? {...item, quantity: item.quantity + 1} 
-            : item
-        );
+      // Find if this book already exists in the cart
+      const existingItemIndex = prevItems.findIndex(item => {
+        // Get the ID property from the item in the cart
+        const itemId = item.book.bookID || item.book.bookId || item.book.BookID || item.book.id || item.book.ID;
+        console.log("Comparing cart item ID:", itemId, "with new book ID:", bookId);
+        return itemId === bookId;
+      });
+      
+      console.log("Existing item index:", existingItemIndex);
+      
+      if (existingItemIndex >= 0) {
+        // Create a new array with the updated quantity
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + 1
+        };
+        console.log("Updated cart:", JSON.stringify(updatedItems));
+        return updatedItems;
       } else {
-        return [...prevItems, { book, quantity: 1 }];
+        // Add as a new item
+        const newItems = [...prevItems, { book, quantity: 1 }];
+        console.log("New cart with added item:", JSON.stringify(newItems));
+        return newItems;
       }
     });
   };
